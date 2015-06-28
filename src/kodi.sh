@@ -89,6 +89,27 @@ stop() {
     try_call Player.Stop "[${first_player}]" > /dev/null
 }
 
+seek() {
+    local first_player=$(get_first_active_playerid)
+    if [[ "$first_player" == "null" ]]; then
+        echo "Nothing is currently playing"
+        return 2
+    fi
+
+    local time=$(try_call Player.Seek "[${first_player}, ${1}]" | jq .result.time)
+    local minutes=$(echo "$time" | jq .minutes)
+    local seconds=$(echo "$time" | jq .seconds)
+    echo "Skipped to $(printf "%.2d" "$minutes"):${seconds}"
+}
+
+seek_forward() {
+    seek \"smallforward\"
+}
+
+seek_backward() {
+    seek \"smallbackward\"
+}
+
 handle_args() {
     if [ "$#" -lt 1 ]; then
         >&2 echo "You need to specify a command"
@@ -104,6 +125,14 @@ handle_args() {
             ;;
             stop )
                 stop
+                break
+            ;;
+            forward )
+                seek_forward
+                break
+            ;;
+            backward )
+                seek_backward
                 break
             ;;
             --help )
