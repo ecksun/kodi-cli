@@ -9,6 +9,7 @@ Usage: $(basename "$0") <command>
 
 commands:
     pause   Pause playback
+    stop    Stop playback
 
 EOF
 }
@@ -85,7 +86,7 @@ stop() {
         return 2
     fi
 
-    try_call Player.Stop "[${first_player}]"
+    try_call Player.Stop "[${first_player}]" > /dev/null
 }
 
 handle_args() {
