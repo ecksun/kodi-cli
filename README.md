@@ -25,7 +25,7 @@ Paused
 $ kodi pause
 Playing
 $ kodi backward
-Skipped to 14:9
+Skipped to 14:09
 $ kodi forward
 Skipped to 14:39
 ```

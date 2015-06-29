@@ -99,7 +99,7 @@ seek() {
     local time=$(try_call Player.Seek "[${first_player}, ${1}]" | jq .result.time)
     local minutes=$(echo "$time" | jq .minutes)
     local seconds=$(echo "$time" | jq .seconds)
-    echo "Skipped to $(printf "%.2d" "$minutes"):${seconds}"
+    echo "Skipped to $(printf "%.2d" "$minutes"):$(printf "%.2d" "$seconds")"
 }
 
 seek_forward() {
