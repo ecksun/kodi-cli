@@ -2,6 +2,7 @@
 
 set -u
 # set -x
+set -o pipefail
 
 print_help() {
 cat <<EOF
@@ -53,9 +54,12 @@ call() {
 }
 
 try_call() {
-    local result=$(call "$@")
+    local result call_status
+    result=$(call "$@")
 
-    if is_error "$result"; then
+    call_status="$?"; [ "$call_status" -ne 0 ] && return "$call_status"
+
+    if [ "$?" -ne 0 ] && is_error "$result"; then
         >&2 echo "Error while calling $1"
         >&2 echo "Got response:"
         echo "$result" | >&2 jq --color-output .
@@ -66,11 +70,24 @@ try_call() {
 }
 
 get_first_active_playerid() {
-    try_call Player.GetActivePlayers '[]' | jq .result[0].playerid
+    local call_result call_status
+
+    call_result=$(try_call Player.GetActivePlayers '[]')
+
+    call_status="$?";
+    if [ "$call_status" -ne 0 ]; then
+        echo >&2 "Failed to get the current active player"
+        return "$call_status"
+    fi
+    
+    echo "$call_result" | jq .result[0].playerid
 }
 
 pause() {
-    local first_player=$(get_first_active_playerid)
+    local first_player call_status
+    first_player=$(get_first_active_playerid)
+    call_status="$?"; [ "$call_status" -ne 0 ] && return "$call_status"
+
     if [[ "$first_player" == "null" ]]; then
         echo "Nothing is currently playing"
         return 2
@@ -84,7 +101,10 @@ pause() {
 }
 
 stop() {
-    local first_player=$(get_first_active_playerid)
+    local first_player call_status
+    first_player=$(get_first_active_playerid)
+    call_status="$?"; [ "$call_status" -ne 0 ] && return "$call_status"
+
     if [[ "$first_player" == "null" ]]; then
         echo "Nothing is currently playing"
         return 2
@@ -94,7 +114,10 @@ stop() {
 }
 
 seek() {
-    local first_player=$(get_first_active_playerid)
+    local first_player call_status
+    first_player=$(get_first_active_playerid)
+    call_status="$?"; [ "$call_status" -ne 0 ] && return "$call_status"
+
     if [[ "$first_player" == "null" ]]; then
         echo "Nothing is currently playing"
         return 2
