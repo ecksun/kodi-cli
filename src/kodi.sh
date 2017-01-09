@@ -42,6 +42,10 @@ is_error() {
 }
 
 call() {
+    if [ ! -f "$HOME/.netrc.kodi" ]; then
+        echo >&2 "$HOME/.netrc.kodi is missing"
+        return 2
+    fi
     local RPC_DATA=$(create_json "$@")
     local result=$(curl --silent --netrc-file ~/.netrc.kodi -H "Content-type: application/json" -X POST --data "$RPC_DATA" http://saga.ecksun.com/jsonrpc)
 
