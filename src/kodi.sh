@@ -9,8 +9,10 @@ cat <<EOF
 Usage: $(basename "$0") <command>
 
 commands:
-    pause   Pause playback
-    stop    Stop playback
+    pause           Pause playback
+    stop            Stop playback
+    play <url>      Play url
+    queue <url>     Queue url
 
 EOF
 }
@@ -137,6 +139,51 @@ seek_backward() {
     seek \"smallbackward\"
 }
 
+get_playlist_item_for_url() {
+    local url="$1"
+    local youtube_id
+    if [[ "$url" =~ .*youtu.*v=([^#\&]+) ]]; then
+        local youtube_id="${BASH_REMATCH[1]}"
+        local url="plugin://plugin.video.youtube/?action=play_video&videoid=${youtube_id}"
+        echo  '{ "file": "'"$url"'" }'
+    else
+        return 1
+    fi
+}
+
+play() {
+    local url="$1"
+    local playlist_item
+
+    playlist_item=$(get_playlist_item_for_url "$url")
+    if [ $? != 0 ]; then
+        echo >&2 "Could not parse URL"
+        return 1
+    fi
+
+    try_call Player.Open "{ \"item\": $playlist_item }" > /dev/null
+}
+
+queue() {
+    local url="$1"
+    local video_playlist_id
+
+    first_player=$(get_first_active_playerid)
+    if [[ "$first_player" == "null" ]]; then
+        play "$url"
+        return "$?"
+    fi
+
+    playlist_item=$(get_playlist_item_for_url "$url")
+    if [ $? != 0 ]; then
+        echo >&2 "Could not parse URL"
+        return 1
+    fi
+
+    video_playlist_id=$(try_call Playlist.GetPlaylists {} | jq '.result[] | select(.type=="video").playlistid')
+    try_call Playlist.Add "{ \"item\": $playlist_item, \"playlistid\": $video_playlist_id }"
+}
+
 handle_args() {
     if [ "$#" -lt 1 ]; then
         >&2 echo "You need to specify a command"
@@ -160,6 +207,14 @@ handle_args() {
             ;;
             backward )
                 seek_backward
+                break
+            ;;
+            play )
+                play "$2"
+                break
+            ;;
+            queue )
+                queue "$2"
                 break
             ;;
             --help )
