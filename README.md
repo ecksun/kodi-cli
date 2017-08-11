@@ -9,6 +9,13 @@ Currently it supports pausing (and resuming), stopping and seeking.
 * jq
 * curl
 
+## Completion
+
+To enable bash completion, append [completion.sh](./completion.sh) to
+`~/.bash_completion`
+
+    cat completion.sh >> ~/.bash_completion
+
 ## Configuration
 
 The configuration file is `~/.netrc.kodi`, it is supposed to contain a username
