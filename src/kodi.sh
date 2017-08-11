@@ -6,14 +6,14 @@ set -o pipefail
 
 print_help() {
 cat <<EOF
-Usage: $(basename "$0") <command>
+Usage: $(basename "$0") <command> [options]
 
 commands:
     pause           Pause playback
     stop            Stop playback
     play <url>      Play url
     queue <url>     Queue url
-
+    seek <time>     Seek to specific time
 EOF
 }
 
@@ -139,6 +139,17 @@ seek_backward() {
     seek \"smallbackward\"
 }
 
+seek_exact() {
+    local time_position="$1"
+
+    local time_split=(${time_position//:/ })
+    local hour="${time_split[*]: -3:1}"
+    local minute="${time_split[*]: -2:1}"
+    local second="${time_split[*]: -1:1}"
+
+    seek "{ \"hours\": ${hour:=0}, \"minutes\": ${minute:=0}, \"seconds\": ${second:=0} }"
+}
+
 get_playlist_item_for_url() {
     local url="$1"
     local youtube_id
@@ -207,6 +218,10 @@ handle_args() {
             ;;
             backward )
                 seek_backward
+                break
+            ;;
+            seek )
+                seek_exact "$2"
                 break
             ;;
             play )
