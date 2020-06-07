@@ -9,11 +9,13 @@ cat <<EOF
 Usage: $(basename "$0") <command> [options]
 
 commands:
-    pause           Pause playback
+    pause           Pause/resume playback
     stop            Stop playback
     play <url>      Play url
     queue <url>     Queue url
     seek <time>     Seek to specific time
+    forward         Seek forward a small amount of time
+    backward        Seek backward a small amount of time
 EOF
 }
 
