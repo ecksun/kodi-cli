@@ -16,6 +16,7 @@ commands:
     seek <time>     Seek to specific time
     forward         Seek forward a small amount of time
     backward        Seek backward a small amount of time
+    scan            Scan the video library for new items
 EOF
 }
 
@@ -197,6 +198,10 @@ queue() {
     try_call Playlist.Add "{ \"item\": $playlist_item, \"playlistid\": $video_playlist_id }"
 }
 
+scan() {
+    try_call VideoLibrary.Scan "{}"
+}
+
 handle_args() {
     if [ "$#" -lt 1 ]; then
         >&2 echo "You need to specify a command"
@@ -232,6 +237,10 @@ handle_args() {
             ;;
             queue )
                 queue "$2"
+                break
+            ;;
+            scan )
+                scan
                 break
             ;;
             --help )
